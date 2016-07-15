@@ -1,5 +1,5 @@
 # collabworks
-Build collaboration networks beetwen scientist based on the references of WoS/Scopus databases. 
+Build collaboration networks beetwen scientist based on references of WoS/Scopus databases. 
 
 ## Requisites
 The script is developed in Python 3.
@@ -15,8 +15,8 @@ The following Python packages are needed:
 ### Obtain the data
 
 First of all download all the data you want to visualize. 
-* In Scopus, download it as CSV
-* In WoS, download it as 'Tab-delimited (Win, UTF-8)' 
+* If using Scopus, download it as CSV
+* If using WoS, download it as 'Tab-delimited (Win, UTF-8)' 
 
 Afterwards, place all the txt/csv files into a 'data' folder contained in the execution directory.
 

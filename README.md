@@ -12,14 +12,16 @@ The following Python packages are needed:
 
 ## Usage
 
-** Obtain the data **
+### Obtain the data
+
 First of all download all the data you want to visualize. 
 * In Scopus, download it as CSV
 * In WoS, download it as 'Tab-delimited (Win, UTF-8)' 
 
 Afterwards, place all the txt/csv files into a 'data' folder contained in the execution directory.
 
-** Arguments and execution **
+### Arguments and execution
+
 Run the program using Python 3.
 
 	python3 collabworks.py *args
@@ -40,6 +42,6 @@ dropped from the database. Thus,
 
 * publication_threshold (integer): Integer defining the publication_threshold (default: 1)
 
-** Results **
+### Results
 The script export an GraphML file which can be visualized using [Gephi](https://gephi.org/).
 

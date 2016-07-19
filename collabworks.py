@@ -8,6 +8,12 @@ from unidecode import unidecode
 
 
 def get_search_engine_parameters(search_engine, nodes_size):
+    """
+    Obtain the WoS/Scopus parameters
+    :param search_engine: String, 's': Scopus / 'w': WoS
+    :param nodes_size: String, 'c': Nodes size represents citations/author / 'a': Nodes size represents articles/author
+    :return: Dictionary with the selected engine parameters
+    """
 
     if search_engine == 's':
         search_engine_dict = {'authors_name_column_id': 'Authors', 'authors_separator': ';', 'engine_name': 'Scopus',
@@ -34,6 +40,12 @@ def get_search_engine_parameters(search_engine, nodes_size):
 
 
 def get_concat_df(engine_params):
+    """
+    Based on the tex/csv files placed on 'data' folder, the subroutine loads them and concatenates all the DF into a
+    unique one. It also drops duplicated publications based on the unique identifier column.
+    :param engine_params: Parameters dictionary
+    :return: concatenated DF
+    """
     all_files = glob.glob("./data/*." + engine_params['data_files_format'])
     df_list = []
     for file in all_files:
@@ -45,13 +57,16 @@ def get_concat_df(engine_params):
         df_list.append(part_df)
 
     # Concatenate DataFrames specified in the list
-    df = pd.concat(df_list)
+    try:
+        df = pd.concat(df_list)
+    except ValueError:
+        print('\n\n(!) No objects to concatenate. Data folder is empty. \n')
+        exit('End of execution')
     # Drop duplicates based on the WOS Unique Identifier or the Scopus EID.
     filtered_df = df.drop_duplicates(engine_params['unique_articles_column_id'])
     return filtered_df
 
 
-# Print iterations progress
 def print_progress(iteration, total, prefix='', suffix='', decimals=2, bar_length=60):
     """
     Call in a loop to create terminal progress bar
@@ -74,7 +89,13 @@ def print_progress(iteration, total, prefix='', suffix='', decimals=2, bar_lengt
 
 
 def authors_format(ds, engine_params):
-    # Setting the appropriate name format. Removing parentheses in order to avoid regex matching groups
+    """
+    Sets the appropriate name format for all authors in a Serie
+    :param ds: Series to be formatted
+    :param engine_params: Parameters dictionary
+    :return: Formatted Series
+    """
+    # . Removing parentheses in order to avoid regex matching groups
     if engine_params['engine_name'] == 'WoS':
         ds = ds.apply(lambda element: unidecode(str(element).upper().replace(' ', '').replace(',', ', ')
                                                 .replace('(', ' ').replace(')', '')))
@@ -102,11 +123,14 @@ def populate_adj_matrix(ds, authors_set_list, engine_params):
     # Index progress bar
     i = 0
     for author_name in authors_set_list:
-        # Filter Series for author name. Regex matching
+        # Filter Series for author name. Regex matching. Obtain a Series in which rows contains the author's name
         author_collaborators_ds = ds[ds.str.contains(author_name + '(?:$|\W)')]
+        # Split each row using the appropriate separator
         split_author_collaborators_ds = author_collaborators_ds.str.split(engine_params['authors_separator'])
+        #
         column_author_collaborators_df = pd.DataFrame({i: split_author_collaborators_ds.str[i]
                                                        for i in range(max(split_author_collaborators_ds.str.len()))})
+        input(column_author_collaborators_df)
         value_counts_author_collaborations_ds = pd.Series(column_author_collaborators_df.stack().values).value_counts()
         value_counts_author_collaborations_ds.drop(author_name, inplace=True)
         adj_df.loc[author_name, value_counts_author_collaborations_ds.index] = value_counts_author_collaborations_ds
@@ -119,7 +143,7 @@ def populate_adj_matrix(ds, authors_set_list, engine_params):
 
 def get_adjacency_df(main_df, min_weight, engine_params):
     """
-
+    Intermediate subroutine. Loads dictionaries and other components.
     :param main_df: Main DataFrame. Contains all the article's information
     :param min_weight: Minimum number of articles that some author must have in order to appear in the graph
     :param engine_params: Dictionary of parameters
@@ -161,18 +185,25 @@ def get_adjacency_df(main_df, min_weight, engine_params):
     return adj_df, authors_set_list, authors_histogram_ds
 
 
-def get_num_articles(G, number_of_articles_per_author_ds, authors_tuple):
+def get_num_articles(G, number_of_articles_per_author_ds, authors_set_list):
+    """
+    Given a NetowrkX graph G, it obtains the nodes size based on the number of articles per author
+    :param G: Graph
+    :param number_of_articles_per_author_ds: Series containing the number of articles per author
+    :param authors_set_list: Set of articles within the graph
+    :return: Graph with property size
+    """
     # Maximum number of publications found in the Dataframe
     x_max = number_of_articles_per_author_ds.max()
     # Maximum size of the nodes
     size_max = 13
     k = (x_max/size_max)
-    for i in range(len(authors_tuple)):
+    for i in range(len(authors_set_list)):
         # Set a relation between node identifier and author name
-        G.node[i]['Label'] = authors_tuple[i]
+        G.node[i]['Label'] = authors_set_list[i]
         # Set the number of articles normalized as the node size property
         # x_i: Number of publications of the author
-        x_i = number_of_articles_per_author_ds[authors_tuple[i]]
+        x_i = number_of_articles_per_author_ds[authors_set_list[i]]
         if x_i >= k:
             G.node[i]['size'] = str(int(x_i/k + k))
         else:
@@ -181,13 +212,21 @@ def get_num_articles(G, number_of_articles_per_author_ds, authors_tuple):
     return G
 
 
-def get_citations_author(G, main_df, authors_tuple, engine_params):
+def get_citations_author(G, main_df, authors_set_list, engine_params):
+    """
+    Given a NetowrkX graph G, it obtains the nodes size based on the number of citations per author
+    :param G: Graph
+    :param main_df: Main DataFrame. Contains all the article's information
+    :param authors_set_list: Set of articles within the graph
+    :param engine_params: Parameters dictionary
+    :return: Graph with property size
+    """
     main_df[engine_params['authors_name_column_id']] = \
         authors_format(main_df[engine_params['authors_name_column_id']], engine_params)
-    for i in range(len(authors_tuple)):
+    for i in range(len(authors_set_list)):
         # Return authors name from the tuple given an index i
-        author_name = authors_tuple[i]
-        # Obtain a new Dataframe based on the author name appearance (as a substring) on the authors name column
+        author_name = authors_set_list[i]
+        # Obtain a new DataFrame based on the author name appearance (as a substring) on the authors name column
         substring_researcher_df = \
             main_df[main_df[engine_params['authors_name_column_id']].str.contains(author_name + '(?:$|\W)')]
         # Obtain the total number of citations. Regex is used (\D, only digits will be kept).
@@ -205,12 +244,19 @@ def get_citations_author(G, main_df, authors_tuple, engine_params):
 
 
 def export_graph(main_df, publications_threshold, engine_params):
+    """
+    Generates and exports the obtained graph.
+    :param main_df: Main DataFrame. Contains all the article's information
+    :param publications_threshold: Constant
+    :param engine_params: Parameters dictionary
+    :return: GraphML containing the graph. Exported in the execution directory.
+    """
     # Lets begin dropping all NAN from authors names column and reset index
     main_df.dropna(subset=[engine_params['authors_name_column_id']], inplace=True)
     main_df.reset_index(inplace=True)
 
     # Obtain the adjacency matrix over a Pandas DF
-    authors_adjacency_df, authors_tuple, number_of_articles_per_author_ds = \
+    authors_adjacency_df, authors_set, number_of_articles_per_author_ds = \
         get_adjacency_df(main_df, publications_threshold, engine_params)
 
     # Based on the generated adjacency matrix, obtain the networkX graph
@@ -219,7 +265,7 @@ def export_graph(main_df, publications_threshold, engine_params):
     # NODES SIZE BASED ON THE NUMBER OF CITATIONS PER AUTHOR
     if engine_params['node_size_mode'] == 'c':
         print('\n4) Calculating nodes sizes based on the # citations per author...')
-        G = get_citations_author(G, main_df, authors_tuple, engine_params)
+        G = get_citations_author(G, main_df, authors_set, engine_params)
         # Proceed to export the obtained networkX graph to a GraphML network
         print("\n5) Exporting network...\n")
         nx.write_graphml(G, 'Graph [' + engine_params['engine_name'] + ' - Threshold ' + str(publications_threshold) +
@@ -228,7 +274,7 @@ def export_graph(main_df, publications_threshold, engine_params):
     else:
         # NODES SIZE BASED ON THE NUMBER OF PUBLICATIONS PER AUTHOR
         print('\n4) Calculating nodes sizes based on the # articles per author...\n')
-        G = get_num_articles(G, number_of_articles_per_author_ds, authors_tuple)
+        G = get_num_articles(G, number_of_articles_per_author_ds, authors_set)
         # Proceed to export the obtained networkX graph to a GraphML network
         print("5) Exporting network...\n")
         nx.write_graphml(G, 'Graph [' + engine_params['engine_name'] + ' - Threshold ' + str(publications_threshold) +
@@ -240,12 +286,6 @@ if __name__ == "__main__":
     print("Python WoS/Scopus collaboration networks tool\n")
     args = sys.argv[1:]
     if args:
-        # Input files must be placed in data folder.
-        # Input files ought be named DOI_code-references.txt
-        # Script unique argument stands for the threshold weight from
-        # which lower contributors will not be taken account.
-        # The min weight represents the number of minimum publications
-        # some author ought have not to be dropped from the adjacency matrix. Default value: 1
         print('\n -- Network properties -- ')
         weight_threshold = [item for item in args if item.isdigit()]
         if weight_threshold:

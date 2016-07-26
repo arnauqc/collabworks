@@ -1,5 +1,5 @@
 # collabworks
-Build collaboration networks beetwen scientist based on the references of WoS/Scopus databases. 
+Build collaboration networks beetwen scientist based on references of WoS/Scopus databases. 
 
 ## Requisites
 The script is developed in Python 3.
@@ -12,19 +12,21 @@ The following Python packages are needed:
 
 ## Usage
 
-** Obtain the data **
+### Obtain the data
+
 First of all download all the data you want to visualize. 
-*** Web of Science ***
+#### Web of Science
 Make a search of the articles from which you desire to study its publications structure.
 Obtain afterwards the data selecting *Save to Tab-delimited (Windows, UTF-8)* and gathering the desired number of articles. No abstract is needed.
 Download the bunch of files keeping in mind that WoS allows at most 500 articles for each txt file.
 Place finally all the txt files into the 'data' folder contained in the execution directory.
 
-*** Scopus ***
+#### Scopus 
 Proceed in the same way as for the Web of Science. No abstract is needed.
 Place finally all the csv files into the 'data' folder contained in the execution directory.
 
-** Arguments and execution **
+### Arguments and execution
+
 Run the program using Python 3.
 
 	python3 collabworks.py *args
@@ -45,10 +47,10 @@ dropped from the database. Thus,
 
 * publication_threshold (integer): Integer defining the publication_threshold (default: 1)
 
-** Results **
+### Results
 The script export an GraphML file which can be visualized using [Gephi](https://gephi.org/).
 
-** Example **
+## Example 
 One example is presented for completeness. Supose we one to charcaterize the collaboration of structure of the first scientist doing research on the field of Quantum mechanics. More concretely, we wish to know which were the collaboration communities which were talking about *quantum*s. What we did is search fopr the topic *quantum* in the Web of Science. We downloaded the 840 articles which appeared as search results. Placing them in the */data* folder and executing the program with the following arguments,
 
 * python3 collabworks.py -c -w 5

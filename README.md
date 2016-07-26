@@ -56,6 +56,5 @@ One example is presented for completeness. Supose we one to charcaterize the col
 	python3 collabworks.py -c -w 5
 
 Which means that the size of nodes will account for the number of citations per author (**-c**), that only WoS results are placed in the data folder and our the publication threshold is set to 5, meaning that only scientists with 5 or more articles will appear in the graph. Pressing *enter* the program automatically generated a file called *Graph [WoS - Threshold 5 - # Citations].graphml*, which can be opened in Gephi. With some basic knwoledge of this visualization tool, our graph will look like,
-
-
+![Collaboration network of researchers publishing under the topic of *quantum*. The nodes size are proportional to the number of citations for an author.](example_network.png)
 

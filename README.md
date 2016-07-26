@@ -51,11 +51,11 @@ dropped from the database. Thus,
 The script export an GraphML file which can be visualized using [Gephi](https://gephi.org/).
 
 ## Example 
-One example is presented for completeness. Supose we one to charcaterize the collaboration of structure of the first scientist doing research on the field of Quantum mechanics. More concretely, we wish to know which were the collaboration communities which were talking about *quantum*s. What we did is search fopr the topic *quantum* in the Web of Science. We downloaded the 840 articles which appeared as search results. Placing them in the */data* folder and executing the program with the following arguments,
+One example is presented for completeness. Supose we one to charcaterize the collaboration structure of the first scientist doing research on the field of Quantum mechanics. More concretely, we wish to know which were the collaboration communities which were talking about *quantum*s. We searched in the Web of Science for articles published between 1900 and 1930 under the topic *quantum*. We downloaded the 840 articles which appeared as search results. We placed them in the */data* folder and executed the program with the following arguments,
 
 	python3 collabworks.py -c -w 5
 
-Which means that the size of nodes will account for the number of citations per author (**-c**), that only WoS results are placed in the data folder and our the publication threshold is set to 5, meaning that only scientists with 5 or more articles will appear in the graph. Pressing *enter* the program automatically generated a file called *Graph [WoS - Threshold 5 - # Citations].graphml*, which can be opened in Gephi. With some basic knwoledge of this visualization tool, our graph will look like,
+Which means that the size of nodes will account for the number of citations per author (**-c**), that only WoS results are placed in the data folder (**-w**) and that our publication threshold is set to 5, meaning that only scientists with 5 or more articles will appear in the graph. Pressing *enter* the program automatically generated a file called *Graph [WoS - Threshold 5 - # Citations].graphml*, which can be opened in Gephi. With some basic knwoledge of this visualization tool, our graph will look like,
 
 ![Collaboration network of researchers publishing under the topic of *quantum*. The nodes size are proportional to the number of citations for an author. Orange accounts for low modularity nodes while purple accounts for high nodes.](example_network.png)
 

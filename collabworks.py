@@ -57,10 +57,11 @@ def get_concat_df(engine_params):
         df_list.append(part_df)
 
     # Concatenate DataFrames specified in the list
+    df = pd.concat(df_list)
     try:
         df = pd.concat(df_list)
     except ValueError:
-        print('\n\n(!) No objects to concatenate. Data folder is empty. \n')
+        print('\n\n (!) No objects to concatenate. Data folder is empty. \n')
         exit('End of execution')
     # Drop duplicates based on the WOS Unique Identifier or the Scopus EID.
     filtered_df = df.drop_duplicates(engine_params['unique_articles_column_id'])
@@ -98,10 +99,10 @@ def authors_format(ds, engine_params):
     # . Removing parentheses in order to avoid regex matching groups
     if engine_params['engine_name'] == 'WoS':
         ds = ds.apply(lambda element: unidecode(str(element).upper().replace(' ', '').replace(',', ', ')
-                                                .replace('(', ' ').replace(')', '')))
+                                                .replace('(', ' ').replace(')', '').replace('.','')))
     else:
         ds = ds.apply(lambda element: unidecode(str(element).upper().replace(' ', '')
-                      .replace('(', ' ').replace(')', '').replace('.,','.;')))
+                      .replace('(', ' ').replace(')', '').replace('.,','.;').replace('.','')))
     return ds
 
 
@@ -127,12 +128,13 @@ def populate_adj_matrix(ds, authors_set_list, engine_params):
         author_collaborators_ds = ds[ds.str.contains(author_name + '(?:$|\W)')]
         # Split each row using the appropriate separator
         split_author_collaborators_ds = author_collaborators_ds.str.split(engine_params['authors_separator'])
-        #
-        column_author_collaborators_df = pd.DataFrame({i: split_author_collaborators_ds.str[i]
-                                                       for i in range(max(split_author_collaborators_ds.str.len()))})
-        input(column_author_collaborators_df)
-        value_counts_author_collaborations_ds = pd.Series(column_author_collaborators_df.stack().values).value_counts()
+        # Obtain each author for each coauthored publication. Once obtained the set of authors, calculate the histogram
+        value_counts_author_collaborations_ds = pd.Series([author
+                                                           for coauthors_list in split_author_collaborators_ds
+                                                           for author in coauthors_list]).value_counts()
+        # Drop author name from the histogram Series
         value_counts_author_collaborations_ds.drop(author_name, inplace=True)
+        # Locate the coauthorship histogram as a subset of the adjacency matrix
         adj_df.loc[author_name, value_counts_author_collaborations_ds.index] = value_counts_author_collaborations_ds
         # Step in progress bar
         i += 1
@@ -285,12 +287,12 @@ if __name__ == "__main__":
     print("\n\nCOLLABWORKS")
     print("Python WoS/Scopus collaboration networks tool\n")
     args = sys.argv[1:]
+    print('\n -- Network properties -- ')
     if args:
-        print('\n -- Network properties -- ')
         weight_threshold = [item for item in args if item.isdigit()]
         if weight_threshold:
             weight_threshold = int(weight_threshold[0])
-            print("   - Publications threshold equal to ", weight_threshold)
+            print("   - Publications threshold equal to", weight_threshold)
         else:
             weight_threshold = 1
             print("   - No publication threshold specified. It will be set equal to 1.")

@@ -37,7 +37,7 @@ Place finally all the txt files into the 'data' folder contained in the executio
 
 #### Scopus 
 Make a search of all the articles you would like to analyse. 
-Obtain afterwards the data by selectind *Export*. In the tooltip select *CSV* and *citation information only*, since no abstract is needed.
+Obtain afterwards the data by selecting *Export*. In the tooltip select *CSV* and *citation information only*, since no abstract is needed.
 Place finally all the csv files into the 'data' folder contained in the execution directory.
 
 ### Arguments and execution
@@ -73,7 +73,7 @@ One example is presented for completeness. Supose we one to charcaterize the col
 Which means that the size of nodes will account for the number of citations per author (**-c**), that only WoS results are placed in the data folder (**-w**) and that our publication threshold is set to 5, meaning that only scientists with 5 or more articles will appear in the graph. Pressing *enter* the program automatically generated a file called *Graph [WoS - Threshold 5 - # Citations].graphml*, which can be opened in Gephi. With some basic knwoledge of this visualization tool, our graph will look like,
 
 ![](example_network.png)
-> *Collaboration network of researchers publishing under the topic of quantum. The nodes size are proportional to the number of citations for an author.*
+> *Collaboration network of researchers publishing under the topic of quantum between 1900 and 1930. The nodes size are proportional to the number of citations for an author.*
 
 Sadly, some guy called *[ANONYMOUS]* is getting all the attention, so relevant collaborations are hidden. Anyway, some of the most relevant physics of all time appear in the graph. 
 

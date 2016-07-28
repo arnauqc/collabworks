@@ -225,6 +225,8 @@ def get_citations_author(G, main_df, authors_set_list, engine_params):
     """
     main_df[engine_params['authors_name_column_id']] = \
         authors_format(main_df[engine_params['authors_name_column_id']], engine_params)
+    # Fill NaN with 0 (Scopus considers NAN elements as 0 citations)
+    main_df[engine_params['number_citations_column_id']].fillna(0, inplace=True)
     for i in range(len(authors_set_list)):
         # Return authors name from the tuple given an index i
         author_name = authors_set_list[i]

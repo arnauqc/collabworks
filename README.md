@@ -21,7 +21,7 @@ Which can be installed using [pip](https://docs.python.org/3/installing/).
 
 To install all the packages automatically (and ignore those already installed) you may just run the following line in a terminal,
 
-	python3 -m pip install pandas networkx numpy unidecode
+	pip3 install pandas networkx numpy unidecode
 
 ## Usage
 
